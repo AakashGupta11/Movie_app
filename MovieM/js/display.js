@@ -3,7 +3,10 @@ function isReleased(date){
   var today = new Date();
   var t = new Date(today.getFullYear()+','+(today.getMonth()+1)+','+today.getDate());
   var r = new Date(date);
-  return t > r;
+  if(r == 'Invalid Date')
+      return true;
+  else
+    return t > r;
 }
 
 //function to convert minutes into days, hours and minutes
@@ -135,6 +138,76 @@ function getMovieId(movieId){
 }
 
 //function to display all the details of a movie
+function getMovie(){
+  movieId = sessionStorage.getItem('movieId');
+  axios.get('https://api.themoviedb.org/3/movie/'+movieId+'?api_key=7719d9fc54bec69adbe2d6cee6d93a0d&language=en-US')
+  .then((response) => {
+    imdbId = response.data.imdb_id;
+    axios.get('http://www.omdbapi.com?apikey=c1c12a90&i='+imdbId)
+    .then((response1) => {
+      console.log(response1);
+      let movie = response1.data;
+      let output = '';
+      const dict = {
+        'Jan': 1,
+        'Feb': 2,
+        'Mar': 3,
+        'Apr': 4,
+        'May': 5,
+        'Jun': 6,
+        'Jul': 7,
+        'Aug': 8,
+        'Sep': 9,
+        'Oct': 10,
+        'Nov': 11,
+        'Dec': 12
+      };
+      var arr = movie.Released.split(" ");
+      var today = new Date();
+      var t = new Date(today.getFullYear()+','+(today.getMonth()+1)+','+today.getDate());
+      var r = new Date(arr[2]+','+dict[arr[1]]+','+arr[0]);
+      if(movie.Poster != null){
+          output += `
+          <h1 class="my-4 heading">${movie.Title}</h1>
+
+          <div class="row">
+
+            <div class="col-md-5">
+              <img style="" class="img-fluid" src="${movie.Poster}" alt="">
+            </div>
+
+            <div class="col-md-7">
+              <ul class="list-group">
+                <li class="list-group-item"><strong>Genre: </strong>${movie.Genre}</li>
+                <li class="list-group-item"><strong>Released: </strong>${movie.Released}</li>
+                <li class="list-group-item"><strong>Rated: </strong>${movie.Rated}</li>
+                <li class="list-group-item"><strong>IMDB Rating: </strong>${movie.imdbRating}</li>
+                <li class="list-group-item"><strong>Director: </strong>${movie.Director}</li>
+                <li class="list-group-item"><strong>Writer: </strong>${movie.Writer}</li>
+                <li class="list-group-item"><strong>Actors: </strong>${movie.Actors}</li>
+              </ul>
+              <li class="list-group-item"><strong>Overview: </strong>${movie.Plot}</li>
+              <a href="http://imdb.com/title/${movie.imdbID}" target="blank" class="btn btn-primary">View IMDB</a> `+
+              (t > r ? `<a href="#" onClick="addMovie(${movieId}, ${1})" class="btn btn-primary">Add to Watched</a> ` : ``)
+              +`
+              <a href="#" onClick="addMovie(${movieId}, ${0})" class="btn btn-primary">Add to Wished</a>
+            </div>
+
+          </div>
+          `
+        }
+      $('#movieSingle').html(output);
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
+  })
+  .catch((err) => {
+    console.log(err.message);
+  });
+}
+
+
 // function getMovie(){
 //   movieId = sessionStorage.getItem('movieId');
 //   axios.get('https://api.themoviedb.org/3/movie/'+movieId+'?api_key=7719d9fc54bec69adbe2d6cee6d93a0d&language=en-US')
@@ -163,6 +236,8 @@ function getMovieId(movieId){
 //       var today = new Date();
 //       var t = new Date(today.getFullYear()+','+(today.getMonth()+1)+','+today.getDay());
 //       var r = new Date(arr[2]+','+dict[arr[1]]+','+arr[0]);
+//       console.log(t);
+//       console.log(r);
 //       if(movie.Poster != null){
 //           output += `
 //           <h1 class="my-4 heading">${movie.Title}</h1>
@@ -184,10 +259,9 @@ function getMovieId(movieId){
 //                 <li class="list-group-item"><strong>Actors: </strong>${movie.Actors}</li>
 //               </ul>
 //               <li class="list-group-item"><strong>Overview: </strong>${movie.Plot}</li>
-//               <a href="http://imdb.com/title/${movie.imdbID}" target="blank" class="btn btn-primary">View IMDB</a> `+
-//               (t > r ? `<a href="" onClick="addMovie(${movieId}, ${1})" class="btn btn-primary">Add to Watched</a> ` : ``)
-//               +`
-//               <a href="" onClick="addMovie(${movieId}, ${0})" class="btn btn-primary">Add to Wished</a>
+//               <a href="http://imdb.com/title/${movie.imdbID}" target="blank" class="btn btn-primary">View IMDB</a> 
+//               <a href="#" onClick="addMovie(${movieId}, ${1})" class="btn btn-primary">Add to Watched</a> 
+//               <a href="#" onClick="addMovie(${movieId}, ${0})" class="btn btn-primary">Add to Wished</a>
 //             </div>
 
 //           </div>
@@ -203,75 +277,6 @@ function getMovieId(movieId){
 //     console.log(err.message);
 //   });
 // }
-
-
-function getMovie(){
-  movieId = sessionStorage.getItem('movieId');
-  axios.get('https://api.themoviedb.org/3/movie/'+movieId+'?api_key=7719d9fc54bec69adbe2d6cee6d93a0d&language=en-US')
-  .then((response) => {
-    imdbId = response.data.imdb_id;
-    axios.get('http://www.omdbapi.com?apikey=c1c12a90&i='+imdbId)
-    .then((response1) => {
-      console.log(response1);
-      let movie = response1.data;
-      let output = '';
-      const dict = {
-        'Jan': 1,
-        'Feb': 2,
-        'Mar': 3,
-        'Apr': 4,
-        'May': 5,
-        'Jun': 6,
-        'Jul': 7,
-        'Aug': 8,
-        'Sep': 9,
-        'Oct': 10,
-        'Nov': 11,
-        'Dec': 12
-      };
-      var arr = movie.Released.split(" ");
-      var today = new Date();
-      var t = new Date(today.getFullYear()+','+(today.getMonth()+1)+','+today.getDay());
-      var r = new Date(arr[2]+','+dict[arr[1]]+','+arr[0]);
-      if(movie.Poster != null){
-          output += `
-          <h1 class="my-4 heading">${movie.Title}</h1>
-
-          <div class="row">
-
-            <div class="col-md-5">
-              <img style="" class="img-fluid" src="${movie.Poster}" alt="">
-            </div>
-
-            <div class="col-md-7">
-              <ul class="list-group">
-                <li class="list-group-item"><strong>Genre: </strong>${movie.Genre}</li>
-                <li class="list-group-item"><strong>Released: </strong>${movie.Released}</li>
-                <li class="list-group-item"><strong>Rated: </strong>${movie.Rated}</li>
-                <li class="list-group-item"><strong>IMDB Rating: </strong>${movie.imdbRating}</li>
-                <li class="list-group-item"><strong>Director: </strong>${movie.Director}</li>
-                <li class="list-group-item"><strong>Writer: </strong>${movie.Writer}</li>
-                <li class="list-group-item"><strong>Actors: </strong>${movie.Actors}</li>
-              </ul>
-              <li class="list-group-item"><strong>Overview: </strong>${movie.Plot}</li>
-              <a href="http://imdb.com/title/${movie.imdbID}" target="blank" class="btn btn-primary">View IMDB</a> 
-              <a href="" onClick="addMovie(${movieId}, ${1})" class="btn btn-primary">Add to Watched</a> 
-              <a href="" onClick="addMovie(${movieId}, ${0})" class="btn btn-primary">Add to Wished</a>
-            </div>
-
-          </div>
-          `
-        }
-      $('#movieSingle').html(output);
-    })
-    .catch((err) => {
-      console.log(err.message);
-    });
-  })
-  .catch((err) => {
-    console.log(err.message);
-  });
-}
 
 //function to display similar movies
 function getSimilarMovies(){
@@ -322,7 +327,7 @@ function showWatched(){
         output = '';
         i = 2;
         if(len > 0){
-          output += `Movies you have Watched!!<br /> Time Spend: ${runtime}`;
+          output += `Movies you have Watched!!<br /> <small>Time Spend: ${runtime}</small>`;
           $('#head').html(output);
           output = '';
           while(len--){
@@ -336,10 +341,9 @@ function showWatched(){
                   <img class="card-img-top img-height" src="https://image.tmdb.org/t/p/original${poster}" alt="" onClick="getMovieId(${id})">
                   <div class="card-body">
                     <h4 class="card-title">
-                      <a href="#">${title}</a>
+                      ${title}
                     </h4>
-                    <p class="card-text">${overview}</p>
-                    <a href="#" onClick="removeWatched(${id})" class="btn btn-primary">Remove Watched</a>
+                    <a href="#" onClick="removeWatched(${id})" class="btn btn-danger">Remove Watched</a>
                   </div>
                 </div>
               </div>
@@ -348,7 +352,7 @@ function showWatched(){
         }
         else{
           output += `
-            <h1 class="my-4">You don't have watched any Movies :(</h1>
+            <h1 class="my-4 heading">You don't have watched any Movies :(</h1>
           `
         }
         $('#showWatched').html(output);
@@ -386,10 +390,9 @@ function showWished(){
                   <img class="card-img-top img-height" src="https://image.tmdb.org/t/p/original${poster}" alt="" onClick="getMovieId(${id})">
                   <div class="card-body">
                     <h4 class="card-title">
-                      <a href="#">${title}</a>
+                      ${title}
                     </h4>
-                    <p class="card-text">${overview}</p>
-                    <a href="#" onClick="removeWished(${id})" class="btn btn-primary btn-sm" style="float:left;">Remove Watched</a>
+                    <a href="#" onClick="removeWished(${id})" class="btn btn-danger btn-sm" style="float:left;">Remove Wished</a>
                     <a href="#" onClick="switchWatched(${id})" class="btn btn-primary btn-sm" style="float:right;">Switch Watched</a>
                   </div>
                 </div>
@@ -399,7 +402,7 @@ function showWished(){
         }
         else{
           output += `
-            <h1 class="my-4">You don't have movies in Wish list :(</h1>
+            <h1 class="my-4 heading">You don't have movies in Wish list :(</h1>
           `
         }
         $('#showWished').html(output);
@@ -428,8 +431,11 @@ function addToWatched(){
       arr = [movie.id, movie.imdb_id, movie.runtime, movie.poster_path];
       xmlhttp = new XMLHttpRequest();
       xmlhttp.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200) {
-                alert(this.responseText);
+            if(this.readyState == 4 && this.status == 200) {
+              alert(this.responseText);
+              if(this.responseText == 'Please login first :('){
+                window.location.href = 'login.php';
+              }
             }
         };
         xmlhttp.open("POST","add_watched.php", false);
@@ -451,7 +457,10 @@ function addToWished(){
       xmlhttp = new XMLHttpRequest();
       xmlhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
-                alert(this.responseText);
+              alert(this.responseText);
+              if(this.responseText == 'Please login first :('){
+                window.location.href = 'login.php';
+              }
             }
         };
         xmlhttp.open("POST","add_wished.php", false);
@@ -469,7 +478,7 @@ function removeWatched($id){
   xmlhttp.onreadystatechange = function() {
       if (this.readyState == 4 && this.status == 200) {
           alert(this.responseText);
-          document.location.reload()
+          document.location.reload();
       }
   };
   xmlhttp.open("GET","remove_watched.php?id="+$id, false);
@@ -483,7 +492,7 @@ function removeWished($id){
   xmlhttp.onreadystatechange = function() {
       if (this.readyState == 4 && this.status == 200) {
           alert(this.responseText);
-          document.location.reload()
+          document.location.reload();
       }
   };
   xmlhttp.open("GET","remove_wished.php?id="+$id, false);
@@ -493,6 +502,14 @@ function removeWished($id){
 
 //function to swich movies from wish list to watch list
 function switchWatched($id){
-  addMovie($id, 1);
-  removeWished($id);
+  xmlhttp = new XMLHttpRequest();
+  xmlhttp.onreadystatechange = function() {
+      if (this.readyState == 4 && this.status == 200) {
+          alert(this.responseText);
+          document.location.reload();
+      }
+  };
+  xmlhttp.open("GET","switch_watched.php?id="+$id, false);
+  xmlhttp.setRequestHeader( "Content-Type", "application/x-www-form-urlencoded" );
+  xmlhttp.send();
 }
